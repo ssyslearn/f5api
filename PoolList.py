@@ -1,10 +1,10 @@
-from flask import request
+from flask import request, jsonify
 from flask_restful import Resource
 from info.L4info import L4info
 from curlset.command import command
 import json, requests
 
-class Virtuals(Resource):
+class PoolList(Resource):
 	def __init__(self):
 		self.username = L4info.get_id()
 		self.password = L4info.get_pw()
@@ -13,14 +13,12 @@ class Virtuals(Resource):
 
 	def get(self):
 		try:
-			r = requests.get(self.url+command.virtuals, auth=(self.username, self.password), headers=self.headers, verify=False)
+			r = requests.get(self.url+command.pools, auth=(self.username, self.password), headers=self.headers, verify=False)
 			json_data = r.json()
-			data = []
-			for item in json_data['items']:
-				data.append(item['name'])
-			status = r.status_code
-			result = str(status) + ' ' + ' '.join(data)
-			return result
+			ret_data = {}
+			ret_data['status'] = r.status_code
+			ret_data['pools'] = json_data
+			return jsonify(ret_data)
 		except:
-			return 'cannot get virtuals info from L4'
+			return 'cannot get pools info from L4'
 
