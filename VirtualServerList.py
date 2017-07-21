@@ -4,7 +4,7 @@ from info.L4info import L4info
 from curlset.command import command
 import json, requests
 
-class VirtualList(Resource):
+class VirtualServerList(Resource):
 	def __init__(self):
 		self.username = L4info.get_id()
 		self.password = L4info.get_pw()
