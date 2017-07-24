@@ -1,8 +1,12 @@
 from flask import request, jsonify
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
 from info.L4info import L4info
 from curlset.command import command
 import json, requests
+
+parser = reqparse.RequestParser()
+parser.add_argument('name')
+parser.add_argument('destination')
 
 class VirtualServerList(Resource):
 	def __init__(self):
@@ -22,3 +26,12 @@ class VirtualServerList(Resource):
 		except:
 			return 'cannot get virtuals info from L4'
 
+	def post(self):
+		args = parser.parse_args()
+		try:
+			r = requests.post(self.url+command.virtuals, auth=(self.username, self.password), \
+					 data = json.dumps({'name': args['name'], 'destination': args['destination']}), \
+					 headers=self.headers, verify=False)
+			return jsonify(r.text)
+		except:
+			return 'cannot create virtual server'
