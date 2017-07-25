@@ -28,9 +28,21 @@ class VirtualServerList(Resource):
 
 	def post(self):
 		args = parser.parse_args()
+		cmd = command.create_virtual_server
+		cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
+
+		# empty value of command should have arguments
+		for i in cmd:
+			if cmd[i] == "":
+				try:
+					cmd[i] = args[i]
+				except:
+					# if arguments is empty, raise error
+					raise
+
 		try:
 			r = requests.post(self.url+command.virtuals, auth=(self.username, self.password), \
-					 data = json.dumps({'name': args['name'], 'destination': args['destination']}), \
+					 data = json.dumps(cmd), \
 					 headers=self.headers, verify=False)
 			return jsonify(r.text)
 		except:

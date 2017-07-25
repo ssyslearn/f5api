@@ -5,6 +5,8 @@ class command:
 
 	virtuals = '/mgmt/tm/ltm/virtual'
 	pools = '/mgmt/tm/ltm/pool'
+	create_virtual_server = """/mgmt/tm/ltm/virtual -d '{"name": "", "destination": ""}'"""
+
 
 #	@classmethod
 #	def get_virtuals(cls):
