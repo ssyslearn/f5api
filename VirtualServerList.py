@@ -31,11 +31,11 @@ class VirtualServerList(Resource):
 		cmd = command.create_virtual_server
 		cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
 
-		# empty value of command should have arguments
-		for i in cmd:
-			if cmd[i] == "":
+		# Empty value of command should have arguments
+		for k in cmd:
+			if cmd[k] == "":
 				try:
-					cmd[i] = args[i]
+					cmd[k] = args[k]
 				except:
 					# if arguments is empty, raise error
 					raise
