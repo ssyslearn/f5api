@@ -34,18 +34,21 @@ class VirtualServerList(Resource):
 			return 'cannot get virtuals info from L4'
 
 	def post(self):
-		args = parser.parse_args()
 		cmd = command.create_virtual_server
 		cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
 
-		# Empty value of command should have arguments
+		# get key from POST data
+		for k in request.json:
+			parser.add_argument(k)
+		args = parser.parse_args()
+
+		# Empty value of command should get arguments from request
 		for k in cmd:
 			if cmd[k] == "":
 				try:
-					parser.add_argument(k)
 					cmd[k] = args[k]
 				except:
-					# if arguments is empty, raise error
+					# if arguments don't have a key , raise error
 					raise InvalidApiCall
 
 		try:
