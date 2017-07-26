@@ -1,12 +1,19 @@
+#-*- coding: utf-8 -*-
 from flask import request, jsonify
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse, abort
 from info.L4info import L4info
 from curlset.command import command
 import json, requests
 
 parser = reqparse.RequestParser()
-parser.add_argument('name')
-parser.add_argument('destination')
+#parser.add_argument('name')
+#parser.add_argument('destination')
+
+class InvalidApiCall(Exception):
+	""" 잘못된 API 요청 """
+	def __init__(self):
+		abort(404, message="invalid api call")
+
 
 class VirtualServerList(Resource):
 	def __init__(self):
@@ -35,10 +42,11 @@ class VirtualServerList(Resource):
 		for k in cmd:
 			if cmd[k] == "":
 				try:
+					parser.add_argument(k)
 					cmd[k] = args[k]
 				except:
 					# if arguments is empty, raise error
-					raise
+					raise InvalidApiCall
 
 		try:
 			r = requests.post(self.url+command.virtuals, auth=(self.username, self.password), \
