@@ -1,5 +1,4 @@
 #-*- coding: utf-8 -*-
-#!/app/python2.7/bin/python
 import subprocess
 import MySQLdb
 import _mysql_exceptions
