@@ -21,9 +21,9 @@ class VirtualServerList(Resource):
     def __init__(self):
         self.username = L4info.get_id()
         self.password = L4info.get_pw()
-        self.url = 'https://' + L4info.get_l4ip()
         self.headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
-
+        self.url = 'https://' + L4info.get_l4ip()
+        self.payload = {'expandSubcollections':'true'}
         self.db_id= L4info.get_db_id()
         self.db_pw= L4info.get_db_pw()
         self.db_ip= L4info.get_db_ip()
@@ -41,7 +41,7 @@ class VirtualServerList(Resource):
 
     def get(self):
         try:
-            r = requests.get(self.url+command.virtuals, auth=(self.username, self.password), headers=self.headers, verify=False)
+            r = requests.get(self.url+command.virtuals, auth=(self.username, self.password), headers=self.headers, params=self.payload, verify=False)
             json_data = r.json()
             ret_data = {}
             ret_data['status'] = r.status_code
