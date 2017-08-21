@@ -54,20 +54,25 @@ class VirtualServerList(Resource):
         cmd = command.create_virtual_server
         uri = cmd.split("-d")[0].strip()
         cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
+        default_key_list = [ k for k in cmd ]
 
         # get key from POST data
         for k in request.json:
             parser.add_argument(k)
         args = parser.parse_args()
 
+        for k in args:
+            cmd[k] = args[k]
+            try:
+                cmd[k] = args[k]
+            except:
+                # if arguments don't have a key , raise error
+                raise InvalidApiCall
+
         # Empty value of command should get arguments from request
-        for k in cmd:
+        for k in default_key_list:
             if cmd[k] == "":
-                try:
-                    cmd[k] = args[k]
-                except:
-                    # if arguments don't have a key , raise error
-                    raise InvalidApiCall
+                return 'You must request with virtual_server_name and destiantion'
 
         try:
             r = requests.post(self.url+uri, auth=(self.username, self.password), \

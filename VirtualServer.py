@@ -21,4 +21,9 @@ class VirtualServer(Resource):
 			return jsonify(ret_data)
 		except:
 			return 'cannot get virtual server info from L4'
+	
+	#def post(self, virtual_server_name):
+	#	cmd = command.modify_virtual_sever
+	#	uri = cmd.split(
+
 
