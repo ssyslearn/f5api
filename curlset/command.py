@@ -7,6 +7,7 @@ class command:
     pools = '/mgmt/tm/ltm/pool'
     create_virtual_server = """ -d '{"name": "", "destination": ""}'"""
     enable_virtual_server = """ -d '{"enabled":""}'"""
+    disable_virtual_server = """ -d '{"enabled":""}'"""
 
 
 #    @classmethod

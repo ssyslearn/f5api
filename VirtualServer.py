@@ -26,32 +26,36 @@ class VirtualServer(Resource):
             return 'cannot get virtual server info from L4'
 
     def post(self, virtual_server_name):
-        cmd = command.virtuals + '/' + virtual_server_name + command.enable_virtual_server
-        uri = cmd.split("-d")[0].strip()
-        cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
-        default_key_list = [ k for k in cmd ]
+        #cmd = command.virtuals + '/' + virtual_server_name + command.enable_virtual_server
+        #uri = cmd.split("-d")[0].strip()
+        #cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
+        #default_key_list = [ k for k in cmd ]
+
+        #for k in args['data']:
+        #    cmd[k] = args['data'][k]
+        #    try:
+        #        cmd[k] = args['data'][k]
+        #    except:
+        #        raise InvalidApiCall
+        #for k in default_key_list:
+        #    if cmd[k] == "":
+        #        return 'You must request ...'
 
         for k in request.json:
             parser.add_argument(k)
         args = parser.parse_args()
-        
-        for k in args:
-            cmd[k] = args[k]
-            try:
-                cmd[k] = args[k]
-            except:
-                raise InvalidApiCall
 
-        for k in default_key_list:
-            if cmd[k] == "":
-                return 'You must request ...'
-    
-        if 'enabled' in cmd:
-            if cmd['enabled'] == 'false':
-                del cmd['enabled']
-                cmd['disabled'] = True
-            else:
-                cmd['enabled'] = True
+        if args['method'] == 'enable':
+            cmd = command.virtuals + '/' + virtual_server_name + command.enable_virtual_server
+            uri = cmd.split("-d")[0].strip()
+            cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
+            cmd['enabled'] = True
+        elif args['method'] == 'disable':
+            cmd = command.virtuals + '/' + virtual_server_name + command.disable_virtual_server
+            uri = cmd.split("-d")[0].strip()
+            cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
+            cmd['disabled'] = True
+                
 
         try:
             r = requests.patch(self.url+uri, auth=(self.username, self.password), \
@@ -65,8 +69,3 @@ class VirtualServer(Resource):
         except:
             return 'cannot handle patch api'
     
-    #def post(self, virtual_server_name):
-    #    cmd = command.modify_virtual_sever
-    #    uri = cmd.split(
-
-
