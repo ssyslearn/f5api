@@ -51,11 +51,12 @@ class VirtualServerList(Resource):
             return 'cannot get virtuals info from L4'
 
     def post(self):
-        cmd = command.create_virtual_server
+        cmd = command.virtuals + command.create_virtual_server
         uri = cmd.split("-d")[0].strip()
         cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
         default_key_list = [ k for k in cmd ]
 
+        return request.json
         # get key from POST data
         for k in request.json:
             parser.add_argument(k)
