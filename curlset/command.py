@@ -8,6 +8,7 @@ class command:
     create_virtual_server = """ -d '{"name": "", "destination": ""}'"""
     enable_virtual_server = """ -d '{"enabled":""}'"""
     disable_virtual_server = """ -d '{"enabled":""}'"""
+    editpool_virtual_server = """ -d '{"pool":""}'"""
 
 
 #    @classmethod

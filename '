@@ -4,6 +4,8 @@ from info.L4info import L4info
 from curlset.command import command
 import json, requests
 
+parser = reqparse.RequestParser()
+
 class VirtualServer(Resource):
     def __init__(self):
         self.username = L4info.get_id()
@@ -39,8 +41,9 @@ class VirtualServer(Resource):
         #    if cmd[k] == "":
         #        return 'You must request ...'
 
-        args = request.get_json(force=True)
-        return args['data']['pool']
+        for k in request.json:
+            parser.add_argument(k)
+        args = parser.parse_args()
 
         if args['method'] == 'enable':
             cmd = command.virtuals + '/' + virtual_server_name + command.enable_virtual_server
@@ -58,7 +61,7 @@ class VirtualServer(Resource):
             cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
             default_key_list = [ k for k in cmd ]
             #try:
-
+			return args
             for k in args['data']:
                 cmd[k] = args['data'][k]
                 try:
@@ -70,6 +73,7 @@ class VirtualServer(Resource):
                     return 'You must request ...'
             #except:
             #    return 'please input data field'
+                
 
         try:
             r = requests.patch(self.url+uri, auth=(self.username, self.password), \
