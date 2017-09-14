@@ -1,8 +1,8 @@
 from flask import request, jsonify
 from flask_restful import Resource, reqparse, abort
+import json, requests
 from info.L4info import L4info
 from curlset.command import command
-import json, requests
 
 class VirtualServer(Resource):
     def __init__(self):
@@ -28,12 +28,10 @@ class VirtualServer(Resource):
         args = request.get_json(force=True)
 
         if args['method'] == 'enable':
-            cmd = command.virtuals + '/' + virtual_server_name
-            uri = cmd
+            uri = command.virtuals + '/' + virtual_server_name
             cmd = {"enabled": True}
         elif args['method'] == 'disable':
-            cmd = command.virtuals + '/' + virtual_server_name
-            uri = cmd
+            uri = command.virtuals + '/' + virtual_server_name
             cmd = {"disabled": True}
         elif args['method'] == 'edit_pool':
             cmd = command.virtuals + '/' + virtual_server_name + command.editpool_virtual_server
