@@ -1,8 +1,18 @@
+#-*- coding: utf-8 -*-
 from flask import request, jsonify
 from flask_restful import Resource, reqparse, abort
 import json, requests
 from info.L4info import L4info
 from curlset.command import command
+import MySQLdb
+import _mysql_exceptions
+import sys
+from contextlib import contextmanager
+
+class InvalidApiCall(Exception):
+    """ 잘못된 API 요청 """
+    def __init__(self):
+        abort(404, message="invalid api call")
 
 class Valid:
     @staticmethod
@@ -29,6 +39,20 @@ class VirtualServer(Resource):
         self.url = 'https://' + L4info.get_l4ip()
         self.payload = {'expandSubcollections':'true'}
         self.headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
+        self.db_id= L4info.get_db_id()
+        self.db_pw= L4info.get_db_pw()
+        self.db_ip= L4info.get_db_ip()
+
+    @contextmanager
+    def db_connect(self):
+        conn = MySQLdb.connect(host=self.db_ip, user=self.db_id, passwd=self.db_pw, db='TEST')
+        cur = conn.cursor()
+
+        try:
+            yield (conn, cur)
+        finally:
+            cur.close()
+            conn.close()
 
     def get(self, virtual_server_name):
         try:
@@ -47,9 +71,31 @@ class VirtualServer(Resource):
         if args['method'] == 'enable':
             uri = command.virtuals + '/' + virtual_server_name
             cmd = {"enabled": True}
+            try:
+                r = requests.patch(self.url+uri, auth=(self.username, self.password), \
+                        data = json.dumps(cmd), \
+                        headers=self.headers, verify=False)
+                with self.db_connect() as (conn, cur):
+                    s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % ('PATCH', uri, json.dumps(cmd), request.remote_user)
+                    cur.execute(s)
+                    conn.commit()
+                return jsonify(r.text)
+            except:
+                return 'cannot enable virtual server'
         elif args['method'] == 'disable':
             uri = command.virtuals + '/' + virtual_server_name
             cmd = {"disabled": True}
+            try:
+                r = requests.patch(self.url+uri, auth=(self.username, self.password), \
+                        data = json.dumps(cmd), \
+                        headers=self.headers, verify=False)
+                with self.db_connect() as (conn, cur):
+                    s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % ('PATCH', uri, json.dumps(cmd), request.remote_user)
+                    cur.execute(s)
+                    conn.commit()
+                return jsonify(r.text)
+            except:
+                return 'cannot enable virtual server'
         elif args['method'] == 'change_pool':
             cmd = command.virtuals + '/' + virtual_server_name + command.change_pool
             uri = cmd.split("-d")[0].strip()
@@ -60,11 +106,11 @@ class VirtualServer(Resource):
                     r = requests.patch(self.url+uri, auth=(self.username, self.password), \
                             data = json.dumps(cmd), \
                             headers=self.headers, verify=False)
-                    json_data = r.json()
-                    ret_data = {}
-                    ret_data['status'] = r.status_code
-                    ret_data['virtual_server'] = json_data
-                    return jsonify(ret_data) 
+                    with self.db_connect() as (conn, cur):
+                        s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % ('PATCH', uri, json.dumps(cmd), request.remote_user)
+                        cur.execute(s)
+                        conn.commit()
+                    return jsonify(r.text)
                 except:
                     return 'cannot handle patch api'
             else:

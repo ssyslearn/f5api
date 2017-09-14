@@ -86,7 +86,7 @@ class VirtualServerList(Resource):
                 #
 
                 with self.db_connect() as (conn, cur):
-                    s = """ INSERT INTO API (api_query, username, date) VALUES ('%s', '%s', now() ) """ % (uri+' '+json.dumps(cmd), request.remote_user)
+                    s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % ('POST', uri, json.dumps(cmd), request.remote_user)
                     cur.execute(s)
                     conn.commit()
                 return jsonify(r.text)
