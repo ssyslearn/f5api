@@ -4,6 +4,25 @@ import json, requests
 from info.L4info import L4info
 from curlset.command import command
 
+class Valid:
+    @staticmethod
+    def valid_args(args, cmd):
+        default_key_list = [ k for k in cmd ]
+        for k in args:
+            cmd[k] = args[k]
+            try:
+                cmd[k] = args[k]
+            except:
+                # if arguments don't have a key , raise error
+                raise InvalidApiCall
+
+        # Empty value of command should get arguments from request
+        for k in default_key_list:
+            if cmd[k] == "":
+                return None
+        print args, cmd, default_key_list
+        return 'OK'
+
 class VirtualServer(Resource):
     def __init__(self):
         self.username = L4info.get_id()
@@ -24,7 +43,6 @@ class VirtualServer(Resource):
             return 'cannot get virtual server info from L4'
 
     def post(self, virtual_server_name):
-
         args = request.get_json(force=True)
 
         if args['method'] == 'enable':
@@ -33,34 +51,25 @@ class VirtualServer(Resource):
         elif args['method'] == 'disable':
             uri = command.virtuals + '/' + virtual_server_name
             cmd = {"disabled": True}
-        elif args['method'] == 'edit_pool':
-            cmd = command.virtuals + '/' + virtual_server_name + command.editpool_virtual_server
+        elif args['method'] == 'change_pool':
+            cmd = command.virtuals + '/' + virtual_server_name + command.change_pool
             uri = cmd.split("-d")[0].strip()
             cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
-            default_key_list = [ k for k in cmd ]
-            #try:
-
-            for k in args['data']:
-                cmd[k] = args['data'][k]
+            
+            if Valid.valid_args(args['data'], cmd):
                 try:
-                    cmd[k] = args['data'][k]
+                    r = requests.patch(self.url+uri, auth=(self.username, self.password), \
+                            data = json.dumps(cmd), \
+                            headers=self.headers, verify=False)
+                    json_data = r.json()
+                    ret_data = {}
+                    ret_data['status'] = r.status_code
+                    ret_data['virtual_server'] = json_data
+                    return jsonify(ret_data) 
                 except:
-                    raise InvalidApiCall
-            for k in default_key_list:
-                if cmd[k] == "":
-                    return 'You must request ...'
-            #except:
-            #    return 'please input data field'
-
-        try:
-            r = requests.patch(self.url+uri, auth=(self.username, self.password), \
-                    data = json.dumps(cmd), \
-                    headers=self.headers, verify=False)
-            json_data = r.json()
-            ret_data = {}
-            ret_data['status'] = r.status_code
-            ret_data['virtual_server'] = json_data
-            return jsonify(ret_data) 
-        except:
-            return 'cannot handle patch api'
+                    return 'cannot handle patch api'
+            else:
+                return 'You must request with pool name'
+        else:
+            return 'please correct method'
     

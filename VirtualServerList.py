@@ -15,6 +15,25 @@ class InvalidApiCall(Exception):
         abort(404, message="invalid api call")
 
 
+class Valid:
+    @staticmethod
+    def valid_args(args, cmd):
+        default_key_list = [ k for k in cmd ]
+        for k in args:
+            cmd[k] = args[k]
+            try:
+                cmd[k] = args[k]
+            except:
+                # if arguments don't have a key , raise error
+                raise InvalidApiCall
+
+        # Empty value of command should get arguments from request
+        for k in default_key_list:
+            if cmd[k] == "":
+                return None
+        return 'OK'
+
+
 class VirtualServerList(Resource):
     def __init__(self):
         self.username = L4info.get_id()
@@ -49,38 +68,25 @@ class VirtualServerList(Resource):
             return 'cannot get virtuals info from L4'
 
     def post(self):
+        args = request.get_json(force=True)
+
         cmd = command.virtuals + command.create_virtual_server
         uri = cmd.split("-d")[0].strip()
         cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
-        default_key_list = [ k for k in cmd ]
 
-        args = request.get_json(force=True)
-
-        for k in args:
-            cmd[k] = args[k]
+        if Valid.valid_args(args, cmd):
             try:
-                cmd[k] = args[k]
+                r = requests.post(self.url+uri, auth=(self.username, self.password), \
+                         data = json.dumps(cmd), \
+                         headers=self.headers, verify=False)
+
+                with self.db_connect() as (conn, cur):
+                    s = """ INSERT INTO API (api_query, username, date) VALUES ('%s', '%s', now() ) """ % (uri+' '+json.dumps(cmd), request.remote_user)
+                    cur.execute(s)
+                    conn.commit()
+                return jsonify(r.text)
             except:
-                # if arguments don't have a key , raise error
-                raise InvalidApiCall
-
-        # Empty value of command should get arguments from request
-        for k in default_key_list:
-            if cmd[k] == "":
-                return 'You must request with virtual_server_name and destiantion'
-
-        try:
-            r = requests.post(self.url+uri, auth=(self.username, self.password), \
-                     data = json.dumps(cmd), \
-                     headers=self.headers, verify=False)
-
-            with self.db_connect() as (conn, cur):
-                s = """ INSERT INTO API (api_query, username, date) VALUES ('%s', '%s', now() ) """ % (uri+' '+json.dumps(cmd), request.remote_user)
-                cur.execute(s)
-                conn.commit()
-            return jsonify(r.text)
-        except:
-            return 'cannot create virtual server'
-
-
+                return 'cannot create virtual server'
+        else:
+            return 'You must request with virtual_server_name and destiantion and pool'
 

@@ -5,8 +5,12 @@ class command:
 
     virtuals = '/mgmt/tm/ltm/virtual'
     pools = '/mgmt/tm/ltm/pool'
-    create_virtual_server = """ -d '{"name": "", "destination": ""}'"""
-    editpool_virtual_server = """ -d '{"pool":""}'"""
+
+    create_monitor = """ -d '{"name": "", "destination": "", "pool":""}'"""
+    create_pool = """ -d '{"name": "", "destination": ""}'"""
+    create_virtual_server = """ -d '{"name": "", "destination": "", "pool":""}'"""
+
+    change_pool = """ -d '{"pool":""}'"""
 
 
 #    @classmethod
