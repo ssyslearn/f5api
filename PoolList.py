@@ -74,7 +74,7 @@ class PoolList(Resource):
                 conn.commit()
             return jsonify(r.text)
         except:
-            return 'cannot create virtual server'
+            return 'cannot create pool'
 
     def get(self):
         try:
