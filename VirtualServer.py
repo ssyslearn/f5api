@@ -20,7 +20,6 @@ class Valid:
         for k in default_key_list:
             if cmd[k] == "":
                 return None
-        print args, cmd, default_key_list
         return 'OK'
 
 class VirtualServer(Resource):

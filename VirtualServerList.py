@@ -80,6 +80,11 @@ class VirtualServerList(Resource):
                          data = json.dumps(cmd), \
                          headers=self.headers, verify=False)
 
+                #
+                # have to implement error handling of requests.post
+                # if apiError in json.loads(r.text).keys(), then error handling
+                #
+
                 with self.db_connect() as (conn, cur):
                     s = """ INSERT INTO API (api_query, username, date) VALUES ('%s', '%s', now() ) """ % (uri+' '+json.dumps(cmd), request.remote_user)
                     cur.execute(s)

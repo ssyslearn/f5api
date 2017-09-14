@@ -6,9 +6,9 @@ class command:
     virtuals = '/mgmt/tm/ltm/virtual'
     pools = '/mgmt/tm/ltm/pool'
 
-    create_monitor = """ -d '{"name": "", "destination": "", "pool":""}'"""
-    create_pool = """ -d '{"name": "", "destination": ""}'"""
-    create_virtual_server = """ -d '{"name": "", "destination": "", "pool":""}'"""
+    create_monitor = """ -d '{"name": "", "destination": ""}'"""
+    create_pool = """ -d '{"name": "", "members": "", "monitor": ""}'"""
+    create_virtual_server = """ -d '{"name": "", "destination": "", "pool": ""}'"""
 
     change_pool = """ -d '{"pool":""}'"""
 
