@@ -54,6 +54,25 @@ class VirtualServer(Resource):
             cur.close()
             conn.close()
 
+    def apicall_with_insertdb(self, uri, cmd, method):
+        try:
+            r = requests.patch(self.url+uri, auth=(self.username, self.password), \
+                        data = json.dumps(cmd), \
+                        headers=self.headers, verify=False)
+
+                #
+                # have to implement error handling of requests.post
+                # if apiError in json.loads(r.text).keys(), then error handling
+                #
+
+            with self.db_connect() as (conn, cur):
+                s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % (method, uri, json.dumps(cmd), request.remote_user)
+                cur.execute(s)
+                conn.commit()
+            return jsonify(r.text)
+        except:
+            return 'cannot change virtual server'
+
     def get(self, virtual_server_name):
         try:
             r = requests.get(self.url+command.virtuals+'/'+virtual_server_name, auth=(self.username, self.password), headers=self.headers, params=self.payload, verify=False)
@@ -71,48 +90,18 @@ class VirtualServer(Resource):
         if args['method'] == 'enable':
             uri = command.virtuals + '/' + virtual_server_name
             cmd = {"enabled": True}
-            try:
-                r = requests.patch(self.url+uri, auth=(self.username, self.password), \
-                        data = json.dumps(cmd), \
-                        headers=self.headers, verify=False)
-                with self.db_connect() as (conn, cur):
-                    s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % ('PATCH', uri, json.dumps(cmd), request.remote_user)
-                    cur.execute(s)
-                    conn.commit()
-                return jsonify(r.text)
-            except:
-                return 'cannot enable virtual server'
+            return self.apicall_with_insertdb(uri, cmd, 'PATCH')
         elif args['method'] == 'disable':
             uri = command.virtuals + '/' + virtual_server_name
             cmd = {"disabled": True}
-            try:
-                r = requests.patch(self.url+uri, auth=(self.username, self.password), \
-                        data = json.dumps(cmd), \
-                        headers=self.headers, verify=False)
-                with self.db_connect() as (conn, cur):
-                    s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % ('PATCH', uri, json.dumps(cmd), request.remote_user)
-                    cur.execute(s)
-                    conn.commit()
-                return jsonify(r.text)
-            except:
-                return 'cannot enable virtual server'
+            return self.apicall_with_insertdb(uri, cmd, 'PATCH')
         elif args['method'] == 'change_pool':
             cmd = command.virtuals + '/' + virtual_server_name + command.change_pool
             uri = cmd.split("-d")[0].strip()
             cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
             
             if Valid.valid_args(args['data'], cmd):
-                try:
-                    r = requests.patch(self.url+uri, auth=(self.username, self.password), \
-                            data = json.dumps(cmd), \
-                            headers=self.headers, verify=False)
-                    with self.db_connect() as (conn, cur):
-                        s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % ('PATCH', uri, json.dumps(cmd), request.remote_user)
-                        cur.execute(s)
-                        conn.commit()
-                    return jsonify(r.text)
-                except:
-                    return 'cannot handle patch api'
+                return self.apicall_with_insertdb(uri, cmd, 'PATCH')
             else:
                 return 'You must request with pool name'
         else:

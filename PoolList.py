@@ -57,6 +57,25 @@ class PoolList(Resource):
             cur.close()
             conn.close()
 
+    def apicall_with_insertdb(self, uri, cmd, method):
+        try:
+            r = requests.post(self.url+uri, auth=(self.username, self.password), \
+                        data = json.dumps(cmd), \
+                        headers=self.headers, verify=False)
+
+                #
+                # have to implement error handling of requests.post
+                # if apiError in json.loads(r.text).keys(), then error handling
+                #
+
+            with self.db_connect() as (conn, cur):
+                s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % (method, uri, json.dumps(cmd), request.remote_user)
+                cur.execute(s)
+                conn.commit()
+            return jsonify(r.text)
+        except:
+            return 'cannot create virtual server'
+
     def get(self):
         try:
             r = requests.get(self.url+command.pools, auth=(self.username, self.password), headers=self.headers, params=self.payload, verify=False)
@@ -76,22 +95,6 @@ class PoolList(Resource):
             cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
     
             if Valid.valid_args(args, cmd):
-                try:
-                    r = requests.post(self.url+uri, auth=(self.username, self.password), \
-                             data = json.dumps(cmd), \
-                             headers=self.headers, verify=False)
-
-                    #
-                    # have to implement error handling of requests.post
-                    # if apiError in json.loads(r.text).keys(), then error handling
-                    #
-
-                    with self.db_connect() as (conn, cur):
-                        s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % ('POST', uri, json.dumps(cmd), request.remote_user)
-                        cur.execute(s)
-                        conn.commit()
-                    return jsonify(r.text)
-                except:
-                    return 'cannot create pool'
+                return self.apicall_with_insertdb(uri, cmd, 'POST')
             else:
                 return 'You must request with pool_name and members and monitor'
