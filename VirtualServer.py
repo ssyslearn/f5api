@@ -24,34 +24,17 @@ class VirtualServer(Resource):
             return 'cannot get virtual server info from L4'
 
     def post(self, virtual_server_name):
-        #cmd = command.virtuals + '/' + virtual_server_name + command.enable_virtual_server
-        #uri = cmd.split("-d")[0].strip()
-        #cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
-        #default_key_list = [ k for k in cmd ]
-
-        #for k in args['data']:
-        #    cmd[k] = args['data'][k]
-        #    try:
-        #        cmd[k] = args['data'][k]
-        #    except:
-        #        raise InvalidApiCall
-        #for k in default_key_list:
-        #    if cmd[k] == "":
-        #        return 'You must request ...'
 
         args = request.get_json(force=True)
-        #return args['data']['pool']
 
         if args['method'] == 'enable':
-            cmd = command.virtuals + '/' + virtual_server_name + command.enable_virtual_server
-            uri = cmd.split("-d")[0].strip()
-            cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
-            cmd['enabled'] = True
+            cmd = command.virtuals + '/' + virtual_server_name
+            uri = cmd
+            cmd = {"enabled": True}
         elif args['method'] == 'disable':
-            cmd = command.virtuals + '/' + virtual_server_name + command.disable_virtual_server
-            uri = cmd.split("-d")[0].strip()
-            cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
-            cmd['disabled'] = True
+            cmd = command.virtuals + '/' + virtual_server_name
+            uri = cmd
+            cmd = {"disabled": True}
         elif args['method'] == 'edit_pool':
             cmd = command.virtuals + '/' + virtual_server_name + command.editpool_virtual_server
             uri = cmd.split("-d")[0].strip()
