@@ -9,8 +9,6 @@ import _mysql_exceptions
 import sys
 from contextlib import contextmanager
 
-parser = reqparse.RequestParser()
-
 class InvalidApiCall(Exception):
     """ 잘못된 API 요청 """
     def __init__(self):
@@ -56,11 +54,7 @@ class VirtualServerList(Resource):
         cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
         default_key_list = [ k for k in cmd ]
 
-        return request.json
-        # get key from POST data
-        for k in request.json:
-            parser.add_argument(k)
-        args = parser.parse_args()
+        args = request.get_json(force=True)
 
         for k in args:
             cmd[k] = args[k]

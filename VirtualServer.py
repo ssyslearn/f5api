@@ -40,7 +40,7 @@ class VirtualServer(Resource):
         #        return 'You must request ...'
 
         args = request.get_json(force=True)
-        return args['data']['pool']
+        #return args['data']['pool']
 
         if args['method'] == 'enable':
             cmd = command.virtuals + '/' + virtual_server_name + command.enable_virtual_server
