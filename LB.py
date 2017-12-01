@@ -31,8 +31,16 @@ class LB(Resource):
         return jsonify(self.map)
 
     def post(self):
+		# class variable test
+		args = request.get_json(force=True)
+
+		if args['method'] == 'set_ip':
+			L4info.set_l4ip(args['data'])
+
+		return L4info.get_l4ip()
+
         # create virtual-pool map
-        return 'please correct method'
+        #return 'please correct method'
 
     def __init__(self):
         self.username = L4info.get_id()
@@ -40,8 +48,8 @@ class LB(Resource):
         self.url = 'https://' + L4info.get_l4ip()
         self.payload = {'expandSubcollections':'true'}
         self.headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
-        self.map = {}
+        #self.map = {}
 
-        self.get_virtual_pool_map()
+        #self.get_virtual_pool_map()
 
         # create virtual-pool map

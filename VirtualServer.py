@@ -33,10 +33,10 @@ class Valid:
         return 'OK'
 
 class VirtualServer(Resource):
-    def __init__(self):
+    def __init__(self, l4ip):
         self.username = L4info.get_id()
         self.password = L4info.get_pw()
-        self.url = 'https://' + L4info.get_l4ip()
+        self.url = 'https://' + l4ip
         self.payload = {'expandSubcollections':'true'}
         self.headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
         self.db_id= L4info.get_db_id()

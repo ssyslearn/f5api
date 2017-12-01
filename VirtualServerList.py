@@ -9,6 +9,7 @@ import _mysql_exceptions
 import sys
 from contextlib import contextmanager
 
+
 class InvalidApiCall(Exception):
     """ 잘못된 API 요청 """
     def __init__(self):
@@ -35,11 +36,11 @@ class Valid:
 
 
 class VirtualServerList(Resource):
-    def __init__(self):
+    def __init__(self, l4ip):
         self.username = L4info.get_id()
         self.password = L4info.get_pw()
         self.headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
-        self.url = 'https://' + L4info.get_l4ip()
+        self.url = 'https://' + l4ip
         self.payload = {'expandSubcollections':'true'}
         self.db_id= L4info.get_db_id()
         self.db_pw= L4info.get_db_pw()
