@@ -4,6 +4,10 @@ from flask_restful import Resource, reqparse, abort
 import json, requests
 from info.L4info import L4info
 from curlset.command import command
+from VirtualServerList import VirtualServerList
+from VirtualServer import VirtualServer
+from PoolList import PoolList
+from Pool import Pool
 import sys
 
 class LB(Resource):
@@ -28,16 +32,78 @@ class LB(Resource):
             return 'cannot get virtual server info from L4'
 
     def get(self):
-        return jsonify(self.map)
+        #return jsonify(self.map)
+        return 'get'
 
     def post(self):
-		# class variable test
-		args = request.get_json(force=True)
+        # class variable test
+        args = request.get_json(force=True)
 
-		if args['method'] == 'set_ip':
-			L4info.set_l4ip(args['data'])
+        if args['method'] == 'show_vs':
+            virtuals = VirtualServerList(args['l4ip'])
+            return virtuals.get()
+        elif args['method'] == 'create_lb':
+            result = {}
+            try:
+                # ping...
+                pass
+            except:
+                pass
 
-		return L4info.get_l4ip()
+            try:
+                try:
+                    pools = PoolList(args['l4ip'])
+                    result['pool_result'] = pools.post(args['pool'])
+                except:
+                    result['pool_result'] = 'Fail to create Pool, 404'
+                try:
+                    virtuals = VirtualServerList(args['l4ip'])
+                    result['virtual_result'] = virtuals.post(args['virtual'])
+                except:
+                    result['virtual_result'] = 'Fail to create Virtual Server, 404'
+            except:
+                return 'Fail to create L4, 404'
+           
+            flag = True
+            for k in result.keys():
+                if result[k].split(',')[-1].strip() != '200':
+                    flag = False
+                    break
+            
+            create_result = {}
+            if flag:
+                create_result['message'] = 'success in creating L4'
+                create_result['status'] = '200'
+                create_result['result'] = result
+                return create_result
+            else:
+                create_result['message'] = 'fail to create l4'
+                create_result['status'] = '404'
+                create_result['result'] = result
+                return create_result
+        elif args['method'] == 'modify_lb':
+            result = {}
+            if args['target'] == 'enable':
+                pass
+            elif args['target'] == 'disable':
+                pass
+            elif args['target'] == 'lb_mode':
+                pass
+            elif args['target'] == 'change_pool':
+                pass
+            elif args['target'] == 'change_member':
+                pass
+            elif args['target'] == 'sticky':
+                pass
+            elif args['target'] == 'monitor':
+                pass
+            else:
+                pass
+            
+
+        else:
+            return 'Error create L4 !!!!'
+
 
         # create virtual-pool map
         #return 'please correct method'
@@ -49,7 +115,5 @@ class LB(Resource):
         self.payload = {'expandSubcollections':'true'}
         self.headers = {'Content-Type': 'application/json', 'Accept-Charset': 'UTF-8'}
         #self.map = {}
-
         #self.get_virtual_pool_map()
 
-        # create virtual-pool map

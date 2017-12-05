@@ -84,26 +84,52 @@ class VirtualServer(Resource):
         except:
             return 'cannot get virtual server info from L4'
 
-    def post(self, virtual_server_name):
-        args = request.get_json(force=True)
+    def modify_enable(self, args):
+        uri = command.virtuals + '/' + args['virtual_server_name']
+        cmd = {"enabled": True}
+        return self.apicall_with_insertdb(uri, cmd, 'PATCH')
 
-        if args['method'] == 'enable':
-            uri = command.virtuals + '/' + virtual_server_name
-            cmd = {"enabled": True}
+
+    def modify_disable(self, args):
+        uri = command.virtuals + '/' + args['virtual_server_name']
+        cmd = {"disabled": True}
+        return self.apicall_with_insertdb(uri, cmd, 'PATCH')
+
+    # pool 통으로 교체
+    def modify_change_pool(self, args):
+        cmd = command.virtuals + '/' + args['virtual_server_name'] + command.change_pool
+        uri = cmd.split("-d")[0].strip()
+        cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
+        
+        #
+        # args['pool'] 입력 표준 정해야함 !!!!!
+        #
+        if Valid.valid_args(args['pool'], cmd):
             return self.apicall_with_insertdb(uri, cmd, 'PATCH')
-        elif args['method'] == 'disable':
-            uri = command.virtuals + '/' + virtual_server_name
-            cmd = {"disabled": True}
-            return self.apicall_with_insertdb(uri, cmd, 'PATCH')
-        elif args['method'] == 'change_pool':
-            cmd = command.virtuals + '/' + virtual_server_name + command.change_pool
-            uri = cmd.split("-d")[0].strip()
-            cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
-            
-            if Valid.valid_args(args['data'], cmd):
-                return self.apicall_with_insertdb(uri, cmd, 'PATCH')
-            else:
-                return 'You must request with pool name'
         else:
-            return 'please correct method'
+            return 'You must request with pool name'
+
+
+#    def post(self, virtual_server_name):
+#        args = request.get_json(force=True)
+#
+#        if args['method'] == 'enable':
+#            uri = command.virtuals + '/' + virtual_server_name
+#            cmd = {"enabled": True}
+#            return self.apicall_with_insertdb(uri, cmd, 'PATCH')
+#        elif args['method'] == 'disable':
+#            uri = command.virtuals + '/' + virtual_server_name
+#            cmd = {"disabled": True}
+#            return self.apicall_with_insertdb(uri, cmd, 'PATCH')
+#        elif args['method'] == 'change_pool':
+#            cmd = command.virtuals + '/' + virtual_server_name + command.change_pool
+#            uri = cmd.split("-d")[0].strip()
+#            cmd = json.loads(cmd.split("-d")[-1].split("'")[1])
+#            
+#            if Valid.valid_args(args['data'], cmd):
+#                return self.apicall_with_insertdb(uri, cmd, 'PATCH')
+#            else:
+#                return 'You must request with pool name'
+#        else:
+#            return 'please correct method'
     

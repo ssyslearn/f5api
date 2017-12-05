@@ -4,6 +4,7 @@ from flask_restful import Resource, reqparse, abort
 from info.L4info import L4info
 from curlset.command import command
 import json, requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import MySQLdb
 import _mysql_exceptions
 import sys
@@ -46,6 +47,9 @@ class VirtualServerList(Resource):
         self.db_pw= L4info.get_db_pw()
         self.db_ip= L4info.get_db_ip()
 
+        # InsecureRequestWarning: Unverified HTTPS request is being made 문제 해결
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
     @contextmanager
     def db_connect(self):
         conn = MySQLdb.connect(host=self.db_ip, user=self.db_id, passwd=self.db_pw, db='TEST')
@@ -72,9 +76,12 @@ class VirtualServerList(Resource):
                 s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % (method, uri, json.dumps(cmd), request.remote_user)
                 cur.execute(s)
                 conn.commit()
-            return jsonify(r.text)
+            if r.status_code == requests.codes.ok:
+                return 'success create virutal, 200'
+            else:
+                return 'cannot create virtual server, 404'
         except:
-            return 'cannot create virtual server'
+            return 'cannot create virtual server, 404'
 
 
     def get(self):
@@ -88,8 +95,8 @@ class VirtualServerList(Resource):
         except:
             return 'cannot get virtuals info from L4'
 
-    def post(self):
-        args = request.get_json(force=True)
+    def post(self, args):
+        #args = request.get_json(force=True)
 
         cmd = command.virtuals + command.create_virtual_server
         uri = cmd.split("-d")[0].strip()

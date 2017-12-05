@@ -8,6 +8,7 @@ import MySQLdb
 import _mysql_exceptions
 import sys
 from contextlib import contextmanager
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 
 class InvalidApiCall(Exception):
@@ -46,6 +47,9 @@ class PoolList(Resource):
         self.db_pw= L4info.get_db_pw()
         self.db_ip= L4info.get_db_ip()
 
+        # InsecureRequestWarning: Unverified HTTPS request is being made 문제 해결
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
     @contextmanager
     def db_connect(self):
         conn = MySQLdb.connect(host=self.db_ip, user=self.db_id, passwd=self.db_pw, db='TEST')
@@ -72,9 +76,13 @@ class PoolList(Resource):
                 s = """ INSERT INTO API (method, api_uri, api_data, username, date) VALUES ('%s', '%s', '%s', '%s', now() ) """ % (method, uri, json.dumps(cmd), request.remote_user)
                 cur.execute(s)
                 conn.commit()
-            return jsonify(r.text)
+                
+            if r.status_code == requests.codes.ok:
+                return 'success create pool, 200'
+            else:
+                return 'cannot create pool, 404'
         except:
-            return 'cannot create pool'
+            return 'cannot create pool, 404'
 
     def get(self):
         try:
@@ -87,8 +95,8 @@ class PoolList(Resource):
         except:
             return 'cannot get pools info from L4'
 
-    def post(self):
-            args = request.get_json(force=True)
+    def post(self, args):
+            #args = request.get_json(force=True)
     
             cmd = command.pools + command.create_pool
             uri = cmd.split("-d")[0].strip()
